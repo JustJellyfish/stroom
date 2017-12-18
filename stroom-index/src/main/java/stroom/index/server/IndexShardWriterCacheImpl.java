@@ -455,13 +455,12 @@ public class IndexShardWriterCacheImpl implements IndexShardWriterCache {
             LOGGER.error(e::getMessage, e);
         }
 
-        try {
-            LOGGER.info(() -> "Clearing any lingering locks (" + indexShard + ")");
-            final Path dir = IndexShardUtil.getIndexDir(indexShard).toPath();
-            LockFactoryUtil.clean(dir);
-        } catch (final Exception e) {
-            LOGGER.error(e::getMessage, e);
-        }
+//        try {
+//            LOGGER.info(() -> "Clearing any lingering locks (" + indexShard + ")");
+//            new IndexShardDirectoryFactory(indexShard).clean();
+//        } catch (final Exception e) {
+//            LOGGER.error(e::getMessage, e);
+//        }
     }
 
     @StroomShutdown

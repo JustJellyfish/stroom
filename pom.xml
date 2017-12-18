@@ -99,6 +99,7 @@
     <!-- added 20160414 END -->
 
     <guava.version>23.3-jre</guava.version>
+    <lucene-hdfs-directory.version>4.7.0-0</lucene-hdfs-directory.version>
 
     <!-- ************** -->
     <!-- Build Settings -->
@@ -785,6 +786,11 @@
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-queryparser</artifactId>
         <version>${lucene.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.bah.lucene</groupId>
+        <artifactId>lucene-hdfs-directory</artifactId>
+        <version>${lucene-hdfs-directory.version}</version>
       </dependency>
       <dependency>
         <groupId>com.mchange</groupId>

@@ -18,6 +18,7 @@ package stroom.node.client.view;
 
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -36,17 +37,38 @@ public class VolumeEditViewImpl extends ViewImpl implements VolumeEditView {
     private final Widget widget;
 
     @UiField
-    ItemListBox<Node> node;
+    ItemListBox<VolumeType> volumeType;
+    @UiField
+    TextBox hdfsUri;
+    @UiField
+    TextBox runAsUser;
     @UiField
     TextBox path;
     @UiField
-    ItemListBox<VolumeType> volumeType;
+    ItemListBox<Node> node;
     @UiField
     ItemListBox<VolumeUseStatus> streamStatus;
     @UiField
     ItemListBox<VolumeUseStatus> indexStatus;
     @UiField
     TextBox bytesLimit;
+
+    @UiField
+    Grid volumeTypeContainer;
+    @UiField
+    Grid hdfsUriContainer;
+    @UiField
+    Grid runAsUserContainer;
+    @UiField
+    Grid pathContainer;
+    @UiField
+    Grid nodeContainer;
+    @UiField
+    Grid streamStatusContainer;
+    @UiField
+    Grid indexStatusContainer;
+    @UiField
+    Grid bytesLimitContainer;
 
     @Inject
     public VolumeEditViewImpl(final Binder binder) {
@@ -59,8 +81,18 @@ public class VolumeEditViewImpl extends ViewImpl implements VolumeEditView {
     }
 
     @Override
-    public ItemListBox<Node> getNode() {
-        return node;
+    public ItemListBox<VolumeType> getVolumeType() {
+        return volumeType;
+    }
+
+    @Override
+    public TextBox getHdfsUri() {
+        return hdfsUri;
+    }
+
+    @Override
+    public TextBox getRunAsUser() {
+        return runAsUser;
     }
 
     @Override
@@ -69,8 +101,8 @@ public class VolumeEditViewImpl extends ViewImpl implements VolumeEditView {
     }
 
     @Override
-    public ItemListBox<VolumeType> getVolumeType() {
-        return volumeType;
+    public ItemListBox<Node> getNode() {
+        return node;
     }
 
     @Override
@@ -86,5 +118,45 @@ public class VolumeEditViewImpl extends ViewImpl implements VolumeEditView {
     @Override
     public HasText getBytesLimit() {
         return bytesLimit;
+    }
+
+    @Override
+    public Grid getVolumeTypeContainer() {
+        return volumeTypeContainer;
+    }
+
+    @Override
+    public Grid getHdfsUriContainer() {
+        return hdfsUriContainer;
+    }
+
+    @Override
+    public Grid getRunAsUserContainer() {
+        return runAsUserContainer;
+    }
+
+    @Override
+    public Grid getPathContainer() {
+        return pathContainer;
+    }
+
+    @Override
+    public Grid getNodeContainer() {
+        return nodeContainer;
+    }
+
+    @Override
+    public Grid getStreamStatusContainer() {
+        return streamStatusContainer;
+    }
+
+    @Override
+    public Grid getIndexStatusContainer() {
+        return indexStatusContainer;
+    }
+
+    @Override
+    public Grid getBytesLimitContainer() {
+        return bytesLimitContainer;
     }
 }

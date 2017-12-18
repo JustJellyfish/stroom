@@ -99,8 +99,7 @@ public class TestIndexShardIO extends StroomUnitTest {
         final IndexShardKey indexShardKey = IndexShardKeyUtil.createTestKey(index);
 
         // Clean up from previous tests.
-        final File dir = IndexShardUtil.getIndexDir(idx1);
-        FileSystemUtil.deleteDirectory(dir);
+        new IndexShardDirectoryFactory(idx1).deleteDirectory();
 
         for (int i = 1; i <= 10; i++) {
             final IndexShardWriter writer = new IndexShardWriterImpl(null, INDEX_CONFIG, indexShardKey, idx1);
@@ -129,8 +128,7 @@ public class TestIndexShardIO extends StroomUnitTest {
         final IndexShardKey indexShardKey = IndexShardKeyUtil.createTestKey(index);
 
         // Clean up from previous tests.
-        final File dir = IndexShardUtil.getIndexDir(idx1);
-        FileSystemUtil.deleteDirectory(dir);
+        new IndexShardDirectoryFactory(idx1).deleteDirectory();
 
         for (int i = 1; i <= 10; i++) {
             final IndexShardWriter writer = new IndexShardWriterImpl(null, INDEX_CONFIG, indexShardKey, idx1);
@@ -306,8 +304,7 @@ public class TestIndexShardIO extends StroomUnitTest {
         final IndexShardKey indexShardKey = IndexShardKeyUtil.createTestKey(index);
 
         // Clean up from previous tests.
-        final File dir = IndexShardUtil.getIndexDir(idx1);
-        FileSystemUtil.deleteDirectory(dir);
+        new IndexShardDirectoryFactory(idx1).deleteDirectory();
 
         final IndexShardWriter writer = new IndexShardWriterImpl(null, INDEX_CONFIG, indexShardKey, idx1);
 
@@ -337,8 +334,7 @@ public class TestIndexShardIO extends StroomUnitTest {
         final IndexShardKey indexShardKey = IndexShardKeyUtil.createTestKey(index);
 
         // Clean up from previous tests.
-        final File dir = IndexShardUtil.getIndexDir(idx1);
-        FileSystemUtil.deleteDirectory(dir);
+        new IndexShardDirectoryFactory(idx1).deleteDirectory();
 
         final IndexShardWriter writer = new IndexShardWriterImpl(null, INDEX_CONFIG, indexShardKey, idx1);
 
@@ -370,8 +366,7 @@ public class TestIndexShardIO extends StroomUnitTest {
         final IndexShardKey indexShardKey = IndexShardKeyUtil.createTestKey(index);
 
         // Clean up from previous tests.
-        final File dir = IndexShardUtil.getIndexDir(idx1);
-        FileSystemUtil.deleteDirectory(dir);
+        new IndexShardDirectoryFactory(idx1).deleteDirectory();
 
         final IndexShardWriter writer = new IndexShardWriterImpl(null, INDEX_CONFIG, indexShardKey, idx1);
 

@@ -193,7 +193,7 @@ public class TestBasicSearch_EndToEnd extends AbstractCoreIntegrationTest {
 
         final List<IndexShard> list = indexShardService.find(new FindIndexShardCriteria());
         for (final IndexShard indexShard : list) {
-            System.out.println("Using index " + IndexShardUtil.getIndexDir(indexShard));
+            System.out.println("Using index " + IndexShardUtil.getIndexPath(indexShard));
         }
     }
 }

@@ -287,7 +287,7 @@ public class VolumeServiceImpl extends SystemEntityServiceImpl<Volume, FindVolum
                 // Check the node matches.
                 if (ok) {
                     ok = false;
-                    if (local == null) {
+                    if (local == null || VolumeType.HDFS.equals(volume.getVolumeType())) {
                         ok = true;
                     } else {
                         if ((Boolean.TRUE.equals(local) && node.equals(nd))
@@ -344,7 +344,8 @@ public class VolumeServiceImpl extends SystemEntityServiceImpl<Volume, FindVolum
         findVolumeCriteria.addSort(FindVolumeCriteria.FIELD_ID, Direction.ASCENDING, false);
         final List<Volume> volumeList = find(findVolumeCriteria);
         for (final Volume volume : volumeList) {
-            if (volume.getNode().equals(node)) {
+            // TODO : Figure out what to do with volumes that have no specific owning node.
+            if (volume.getNode() != null && volume.getNode().equals(node)) {
                 VolumeState volumeState = updateVolumeState(volume);
                 volumeState = saveVolumeState(volumeState);
                 volume.setVolumeState(volumeState);

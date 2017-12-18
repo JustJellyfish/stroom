@@ -51,17 +51,17 @@ public class VolumeListPresenter extends MyPresenterWidget<DataGridView<Volume>>
      * Add the columns to the table.
      */
     private void initTableColumns() {
-        // Node.
-        final Column<Volume, String> nameColumn = new Column<Volume, String>(new TextCell()) {
+        // Volume Type.
+        final Column<Volume, String> volumeTypeColumn = new Column<Volume, String>(new TextCell()) {
             @Override
             public String getValue(final Volume row) {
                 if (row == null) {
                     return null;
                 }
-                return row.getNode().getName();
+                return row.getVolumeType().getDisplayValue();
             }
         };
-        getView().addResizableColumn(nameColumn, "Node", 150);
+        getView().addResizableColumn(volumeTypeColumn, "Volume Type", 80);
 
         // Path.
         final Column<Volume, String> volumeColumn = new Column<Volume, String>(new TextCell()) {
@@ -75,17 +75,17 @@ public class VolumeListPresenter extends MyPresenterWidget<DataGridView<Volume>>
         };
         getView().addResizableColumn(volumeColumn, "Path", 300);
 
-        // Volume Type.
-        final Column<Volume, String> volumeTypeColumn = new Column<Volume, String>(new TextCell()) {
+        // Node.
+        final Column<Volume, String> nameColumn = new Column<Volume, String>(new TextCell()) {
             @Override
             public String getValue(final Volume row) {
-                if (row == null) {
+                if (row == null || row.getNode() == null) {
                     return null;
                 }
-                return row.getVolumeType().getDisplayValue();
+                return row.getNode().getName();
             }
         };
-        getView().addResizableColumn(volumeTypeColumn, "Volume Type", 80);
+        getView().addResizableColumn(nameColumn, "Node", 150);
 
         // Stream Status.
         final Column<Volume, String> streamStatusColumn = new Column<Volume, String>(new TextCell()) {

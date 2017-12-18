@@ -26,6 +26,7 @@ import stroom.node.shared.Node;
 import stroom.node.shared.NodeService;
 import stroom.node.shared.Rack;
 import stroom.node.shared.Volume;
+import stroom.node.shared.Volume.VolumeUseStatus;
 import stroom.node.shared.VolumeService;
 import stroom.node.shared.VolumeState;
 import stroom.util.config.StroomProperties;
@@ -100,6 +101,8 @@ public class NodeConfigForTesting implements NodeConfig {
         final String p = StroomProperties.replaceProperties(path);
         vol.setPath(p);
         vol.setNode(node);
+        vol.setStreamStatus(VolumeUseStatus.ACTIVE);
+        vol.setIndexStatus(VolumeUseStatus.ACTIVE);
         return vol;
     }
 

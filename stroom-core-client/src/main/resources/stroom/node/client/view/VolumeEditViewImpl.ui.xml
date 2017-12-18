@@ -2,42 +2,86 @@
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
              xmlns:g="urn:import:com.google.gwt.user.client.ui"
              xmlns:l="urn:import:stroom.item.client">
-  <g:Grid ui:field="grid" styleName="stroom-control-grid" width="100%">
-    <g:row>
-      <g:cell>Node:</g:cell>
-      <g:customCell>
-        <l:ItemListBox ui:field="node" width="100%" />
-      </g:customCell>
-    </g:row>
-    <g:row>
-      <g:cell>Path:</g:cell>
-      <g:customCell>
-        <g:TextBox ui:field="path" width="100%" />
-      </g:customCell>
-    </g:row>
-    <g:row>
-      <g:cell>Type:</g:cell>
-      <g:customCell>
-        <l:ItemListBox ui:field="volumeType" width="100%" />
-      </g:customCell>
-    </g:row>
-    <g:row>
-      <g:cell>Stream Status:</g:cell>
-      <g:customCell>
-        <l:ItemListBox ui:field="streamStatus" width="100%" />
-      </g:customCell>
-    </g:row>
-    <g:row>
-      <g:cell>Index Status:</g:cell>
-      <g:customCell>
-        <l:ItemListBox ui:field="indexStatus" width="100%" />
-      </g:customCell>
-    </g:row>
-    <g:row>
-      <g:cell>Limit:</g:cell>
-      <g:customCell>
-        <g:TextBox ui:field="bytesLimit" width="100%" />
-      </g:customCell>
-    </g:row>
-  </g:Grid>
+    <g:FlowPanel width="100%">
+        <g:Grid ui:field="volumeTypeContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Type:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <l:ItemListBox ui:field="volumeType" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="hdfsUriContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="HDFS URI:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <g:TextBox ui:field="hdfsUri" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="runAsUserContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Run As User:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <g:TextBox ui:field="runAsUser" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="pathContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Path:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <g:TextBox ui:field="path" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="nodeContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Node:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <l:ItemListBox ui:field="node" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="streamStatusContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Stream Status:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <l:ItemListBox ui:field="streamStatus" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="indexStatusContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Index Status:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <l:ItemListBox ui:field="indexStatus" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+        <g:Grid ui:field="bytesLimitContainer" styleName="stroom-control-grid" width="100%">
+            <g:row>
+                <g:customCell>
+                    <g:Label text="Limit:" width="105px" />
+                </g:customCell>
+                <g:customCell>
+                    <g:TextBox ui:field="bytesLimit" width="100%"/>
+                </g:customCell>
+            </g:row>
+        </g:Grid>
+    </g:FlowPanel>
 </ui:UiBinder> 

@@ -24,14 +24,13 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.LiveIndexWriterConfig;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 import stroom.index.server.analyzer.AnalyzerFactory;
 import stroom.index.shared.IndexShard;
 import stroom.index.shared.IndexShardKey;
+import stroom.node.shared.Volume;
 import stroom.query.shared.IndexField;
 import stroom.query.shared.IndexField.AnalyzerType;
-import stroom.util.io.FileUtil;
 import stroom.util.logging.LambdaLogger;
 import stroom.util.logging.LambdaLoggerFactory;
 import stroom.util.logging.LoggerPrintStream;
@@ -40,13 +39,10 @@ import stroom.util.shared.ModelStringUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 public class IndexShardWriterImpl implements IndexShardWriter {
     private static final LambdaLogger LAMBDA_LOGGER = LambdaLoggerFactory.getLogger(IndexShardWriterImpl.class);
@@ -110,9 +106,6 @@ public class IndexShardWriterImpl implements IndexShardWriter {
         this.creationTime = System.currentTimeMillis();
         this.lastUsedTime = creationTime;
 
-        // Find the index shard dir.
-        dir = IndexShardUtil.getIndexDir(indexShard);
-
         // Make sure the index writer is primed with the necessary analysers.
         LAMBDA_LOGGER.debug(() -> "Updating field analysers");
 
@@ -122,45 +115,23 @@ public class IndexShardWriterImpl implements IndexShardWriter {
         // Update the settings for this shard from the index.
         updateIndexConfig(indexConfig);
 
-        Directory directory = null;
-        IndexWriter indexWriter = null;
-        AtomicInteger documentCount = null;
-
-        // Open the index writer.
-        // If we already have a directory then this is an existing index.
-        final String path = FileUtil.getCanonicalPath(dir);
-        final Path p = dir.toPath();
-        if (Files.isDirectory(p)) {
-            try (final Stream<Path> stream = Files.list(p)) {
-                final long count = stream.count();
-                if (count == 0) {
-                    throw new IndexException("Unable to find any index shard data in directory: " + path);
-                }
-            } catch (final IOException e) {
-                LAMBDA_LOGGER.error(e::getMessage, e);
-                throw new IndexException("Unable to find any index shard data in directory: " + path, e);
-            }
-
-        } else {
-            // Make sure the index hasn't been deleted.
-            if (indexShard.getDocumentCount() > 0) {
-                throw new IndexException("Unable to find any index shard data in directory: " + path);
-            }
-
-            // Try and make all required directories.
-            try {
-                Files.createDirectories(p);
-            } catch (final IOException e) {
-                LAMBDA_LOGGER.error(e::getMessage, e);
-                throw new IndexException("Unable to create directories for new index in \"" + path + "\"", e);
-            }
-        }
-
         // Create the index writer config.
         // Setup the field analyzers.
         final Analyzer defaultAnalyzer = AnalyzerFactory.create(luceneVersion, AnalyzerType.ALPHA_NUMERIC, false);
         final PerFieldAnalyzerWrapper analyzerWrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, fieldAnalyzers);
         final IndexWriterConfig indexWriterConfig = new IndexWriterConfig(luceneVersion, analyzerWrapper);
+
+        if (Volume.VolumeType.HDFS.equals(indexShard.getVolume().getVolumeType())) {
+            dir = null;
+        } else {
+            // Open the index writer.
+            // If we already have a directory then this is an existing index.
+            // Find the index shard dir.
+            dir = new File(IndexShardUtil.getIndexPath(indexShard));
+        }
+
+        // Create lucene directory object.
+        final Directory directory = new IndexShardDirectoryFactory(indexShard).getOrCreateDirectory();
 
         // In debug mode we do extra trace in LUCENE and we also count
         // certain logging info like merge and flush
@@ -173,11 +144,8 @@ public class IndexShardWriterImpl implements IndexShardWriter {
             indexWriterConfig.setInfoStream(loggerPrintStream);
         }
 
-        // Create lucene directory object.
-        directory = new NIOFSDirectory(dir, LockFactoryUtil.get(dir.toPath()));
-
         // IndexWriter to use for adding data to the index.
-        indexWriter = new IndexWriter(directory, indexWriterConfig);
+        final IndexWriter indexWriter = new IndexWriter(directory, indexWriterConfig);
         open.set(true);
 
         final LiveIndexWriterConfig liveIndexWriterConfig = indexWriter.getConfig();
@@ -189,7 +157,7 @@ public class IndexShardWriterImpl implements IndexShardWriter {
 
         // Check the number of committed docs in this shard.
         final int numDocs = indexWriter.numDocs();
-        documentCount = new AtomicInteger(numDocs);
+        final AtomicInteger documentCount = new AtomicInteger(numDocs);
 
         if (indexShard.getDocumentCount() != numDocs) {
             LAMBDA_LOGGER.error(() -> "Mismatch document count. Index says " + numDocs + " DB says " + indexShard.getDocumentCount());

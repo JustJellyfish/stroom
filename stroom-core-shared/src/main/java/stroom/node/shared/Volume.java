@@ -38,7 +38,7 @@ import javax.validation.constraints.Size;
  * Some path on the network where we can store stuff.
  */
 @Entity
-@Table(name = "VOL", uniqueConstraints = @UniqueConstraint(columnNames = { "FK_ND_ID", "PATH" }) )
+@Table(name = "VOL", uniqueConstraints = @UniqueConstraint(columnNames = {"FK_ND_ID", "PATH"}))
 public class Volume extends AuditedEntity {
     public static final String TABLE_NAME = SQLNameConstants.VOLUME;
     public static final String FOREIGN_KEY = FK_PREFIX + TABLE_NAME + ID_SUFFIX;
@@ -47,6 +47,8 @@ public class Volume extends AuditedEntity {
     public static final String STREAM_STATUS = SQLNameConstants.STREAM + SQLNameConstants.STATUS_SUFFIX;
     public static final String INDEX_STATUS = SQLNameConstants.INDEX + SQLNameConstants.STATUS_SUFFIX;
     public static final String BYTES_LIMIT = SQLNameConstants.BYTES + SQLNameConstants.LIMIT_SUFFIX;
+    public static final String HDFS_URI = "HDFS_URI";
+    public static final String RUN_AS = "RUN_AS";
     public static final String ENTITY_TYPE = "Volume";
     public static final String MANAGE_VOLUMES_PERMISSION = "Manage Volumes";
 
@@ -56,11 +58,13 @@ public class Volume extends AuditedEntity {
 
     private String path;
     private byte pvolumeType = VolumeType.PUBLIC.getPrimitiveValue();
-    private byte pstreamStatus = VolumeUseStatus.ACTIVE.getPrimitiveValue();
-    private byte pindexStatus = VolumeUseStatus.ACTIVE.getPrimitiveValue();
+    private byte pstreamStatus = VolumeUseStatus.INACTIVE.getPrimitiveValue();
+    private byte pindexStatus = VolumeUseStatus.INACTIVE.getPrimitiveValue();
     private Node node;
     private Long bytesLimit;
     private VolumeState volumeState;
+    private String hdfsUri;
+    private String runAs;
 
     public Volume() {
     }
@@ -72,43 +76,21 @@ public class Volume extends AuditedEntity {
     /**
      * Utility to create a volume.
      *
-     * @param node
-     *            to use
-     * @param path
-     *            to use
-     * @param volumeType
-     *            to use
-     *
+     * @param node       to use
+     * @param path       to use
+     * @param volumeType to use
      * @return volume
      */
     public static Volume create(final Node node, final String path, final VolumeType volumeType,
-            final VolumeState volumeState) {
+                                final VolumeState volumeState) {
         final Volume volume = new Volume();
         volume.setNode(node);
         volume.setPath(path);
         volume.setVolumeType(volumeType);
         volume.setVolumeState(volumeState);
+        volume.setStreamStatus(VolumeUseStatus.ACTIVE);
+        volume.setIndexStatus(VolumeUseStatus.ACTIVE);
         return volume;
-    }
-
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = Node.FOREIGN_KEY)
-    public Node getNode() {
-        return node;
-    }
-
-    public void setNode(final Node node) {
-        this.node = node;
-    }
-
-    @Column(name = PATH, nullable = false)
-    @Size(min = LengthConstants.MIN_NAME_LENGTH)
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(final String path) {
-        this.path = path;
     }
 
     @Column(name = VOLUME_TYPE, nullable = false)
@@ -127,6 +109,44 @@ public class Volume extends AuditedEntity {
 
     public void setVolumeType(final VolumeType volumeType) {
         this.pvolumeType = volumeType.getPrimitiveValue();
+    }
+
+    @Column(name = HDFS_URI)
+    public String getHdfsUri() {
+        return hdfsUri;
+    }
+
+    public void setHdfsUri(final String hdfsUri) {
+        this.hdfsUri = hdfsUri;
+    }
+
+    @Column(name = RUN_AS)
+    public String getRunAs() {
+        return runAs;
+    }
+
+    public void setRunAs(final String runAs) {
+        this.runAs = runAs;
+    }
+
+    @Column(name = PATH, nullable = false)
+    @Size(min = LengthConstants.MIN_NAME_LENGTH)
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(final String path) {
+        this.path = path;
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = Node.FOREIGN_KEY)
+    public Node getNode() {
+        return node;
+    }
+
+    public void setNode(final Node node) {
+        this.node = node;
     }
 
     @Column(name = STREAM_STATUS, nullable = false)
@@ -225,6 +245,16 @@ public class Volume extends AuditedEntity {
             sb.append(", volumeType=");
             sb.append(getVolumeType().getDisplayValue());
         }
+        if (VolumeType.HDFS.equals(getVolumeType())) {
+            if (hdfsUri != null) {
+                sb.append(", hdfsUri=");
+                sb.append(hdfsUri);
+            }
+            if (runAs != null) {
+                sb.append(", runAs=");
+                sb.append(runAs);
+            }
+        }
         if (path != null) {
             sb.append(", path=");
             sb.append(path);
@@ -248,7 +278,7 @@ public class Volume extends AuditedEntity {
      * A non generic class!
      */
     public enum VolumeType implements HasDisplayValue, HasPrimitiveValue {
-        PUBLIC("Public", 0), PRIVATE("Private", 1);
+        PUBLIC("Public", 0), PRIVATE("Private", 1), HDFS("HDFS", 10);
 
         public static final PrimitiveValueConverter<VolumeType> PRIMITIVE_VALUE_CONVERTER = new PrimitiveValueConverter<VolumeType>(
                 VolumeType.values());

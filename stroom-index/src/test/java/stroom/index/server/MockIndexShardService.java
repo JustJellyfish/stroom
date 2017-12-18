@@ -16,24 +16,21 @@
 
 package stroom.index.server;
 
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import stroom.entity.server.MockEntityService;
 import stroom.entity.shared.BaseResultList;
 import stroom.index.shared.FindIndexShardCriteria;
 import stroom.index.shared.IndexShard;
 import stroom.index.shared.IndexShardKey;
 import stroom.index.shared.IndexShardService;
-import stroom.node.server.NodeCache;
 import stroom.node.shared.Node;
 import stroom.node.shared.Volume;
 import stroom.node.shared.Volume.VolumeType;
-import stroom.streamstore.server.fs.FileSystemUtil;
 import stroom.util.io.FileUtil;
 import stroom.util.spring.StroomSpringProfiles;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.io.File;
+import java.io.IOException;
 
 @Profile(StroomSpringProfiles.TEST)
 @Component("indexShardService")
@@ -41,19 +38,16 @@ public class MockIndexShardService extends MockEntityService<IndexShard, FindInd
         implements IndexShardService {
     @Override
     public IndexShard createIndexShard(final IndexShardKey indexShardKey, final Node ownerNode) {
-        final IndexShard indexShard = new IndexShard();
-        indexShard.setVolume(
-                Volume.create(ownerNode, FileUtil.getTempDir().getAbsolutePath(), VolumeType.PUBLIC));
-        indexShard.setIndex(indexShardKey.getIndex());
-        indexShard.setPartition(indexShardKey.getPartition());
-        indexShard.setPartitionFromTime(indexShardKey.getPartitionFromTime());
-        indexShard.setPartitionToTime(indexShardKey.getPartitionToTime());
-        final IndexShard il = save(indexShard);
-        final File indexDir = IndexShardUtil.getIndexDir(indexShard);
-        if (indexDir.isDirectory()) {
-            FileSystemUtil.deleteContents(indexDir);
-        }
-        return il;
+            final IndexShard indexShard = new IndexShard();
+            indexShard.setVolume(
+                    Volume.create(ownerNode, FileUtil.getTempDir().getAbsolutePath(), VolumeType.PUBLIC));
+            indexShard.setIndex(indexShardKey.getIndex());
+            indexShard.setPartition(indexShardKey.getPartition());
+            indexShard.setPartitionFromTime(indexShardKey.getPartitionFromTime());
+            indexShard.setPartitionToTime(indexShardKey.getPartitionToTime());
+            final IndexShard il = save(indexShard);
+            new IndexShardDirectoryFactory(il).deleteDirectory();
+            return il;
     }
 
     @Override

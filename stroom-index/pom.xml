@@ -112,6 +112,11 @@
       <groupId>com.google.gwt.inject</groupId>
       <artifactId>gin</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>com.bah.lucene</groupId>
+      <artifactId>lucene-hdfs-directory</artifactId>
+    </dependency>
         
   </dependencies>
 </project>

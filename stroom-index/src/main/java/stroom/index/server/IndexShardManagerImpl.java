@@ -150,11 +150,8 @@ public class IndexShardManagerImpl implements IndexShardManager {
 
     private void deleteFromDisk(final IndexShard shard) {
         try {
-            // Find the index shard dir.
-            final File dir = IndexShardUtil.getIndexDir(shard);
-
             // See if there are any files in the directory.
-            if (!dir.isDirectory() || FileSystemUtil.deleteDirectory(dir)) {
+            if (new IndexShardDirectoryFactory(shard).deleteDirectory()) {
                 // The directory either doesn't exist or we have
                 // successfully deleted it so delete this index
                 // shard from the database.

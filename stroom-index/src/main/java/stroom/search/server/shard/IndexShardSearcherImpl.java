@@ -21,16 +21,13 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.NIOFSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stroom.index.server.IndexShardUtil;
-import stroom.index.server.LockFactoryUtil;
+import stroom.index.server.IndexShardDirectoryFactory;
 import stroom.index.shared.IndexShard;
 import stroom.index.shared.IndexShard.IndexShardStatus;
 import stroom.search.server.SearchException;
 
-import java.io.File;
 import java.io.IOException;
 
 public class IndexShardSearcherImpl implements IndexShardSearcher {
@@ -71,13 +68,7 @@ public class IndexShardSearcherImpl implements IndexShardSearcher {
             // If we failed to open a reader with an existing writer then just try
             // and use the index shard directory.
             if (searcherManager == null) {
-                final File dir = IndexShardUtil.getIndexDir(indexShard);
-
-                if (!dir.isDirectory()) {
-                    throw new SearchException("Index directory not found for searching: " + dir.getAbsolutePath());
-                }
-
-                directory = new NIOFSDirectory(dir, LockFactoryUtil.get(dir.toPath()));
+                directory = new IndexShardDirectoryFactory(indexShard).getDirectory();
 //                indexReader = DirectoryReader.open(directory);
                 searcherManager = new SearcherManager(directory, new SearcherFactory());
 

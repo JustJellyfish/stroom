@@ -70,7 +70,7 @@ public class IndexShardSearcherSimpleClient extends AbstractCommandLineTool {
             try {
                 final IndexShardSearcher indexShardSearcher = new IndexShardSearcherImpl(indexShard);
                 System.out.println("");
-                System.out.println("Searching Index " + IndexShardUtil.getIndexDir(indexShard));
+                System.out.println("Searching Index " + IndexShardUtil.getIndexPath(indexShard));
                 final SimpleCollector simpleCollector = new SimpleCollector();
                 final SearcherManager searcherManager = indexShardSearcher.getSearcherManager();
                 final IndexSearcher searcher = searcherManager.acquire();

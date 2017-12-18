@@ -16,6 +16,7 @@
 
 package stroom.node.client.presenter;
 
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
@@ -40,21 +41,141 @@ import stroom.widget.popup.client.presenter.PopupUiHandlers;
 import stroom.widget.popup.client.presenter.PopupView.PopupType;
 import stroom.widget.tab.client.event.CloseEvent;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
 public class VolumeEditPresenter extends MyPresenterWidget<VolumeEditPresenter.VolumeEditView> {
-    private final PopupSize popupSize = new PopupSize(400, 197, 400, 197, 1000, 197, true);
+    private final PopupSize popupSize = new PopupSize(400, 204, 400, 204, 1000, 204, true);
+    private final ClientDispatchAsync clientDispatchAsync;
+    private Volume volume;
+
+    @Inject
+    public VolumeEditPresenter(final EventBus eventBus, final VolumeEditView view,
+                               final ClientDispatchAsync clientDispatchAsync) {
+        super(eventBus, view);
+        this.clientDispatchAsync = clientDispatchAsync;
+    }
+
+    @Override
+    protected void onBind() {
+        super.onBind();
+
+        registerHandler(getView().getVolumeType().addSelectionHandler(selectionEvent -> {
+            final VolumeType volumeType = selectionEvent.getSelectedItem();
+            setVolumeType(volumeType);
+        }));
+    }
+
+    public void addVolume(final Volume volume, final PopupUiHandlers popupUiHandlers) {
+        this.volume = volume;
+        read();
+
+        ShowPopupEvent.fire(this, this, PopupType.OK_CANCEL_DIALOG, popupSize, "Add Volume",
+                new DelegatePopupUiHandlers(popupUiHandlers));
+    }
+
+    public void editVolume(final Volume volume, final PopupUiHandlers popupUiHandlers) {
+        this.volume = volume;
+        read();
+
+        ShowPopupEvent.fire(this, this, PopupType.OK_CANCEL_DIALOG, popupSize, "Edit Volume",
+                new DelegatePopupUiHandlers(popupUiHandlers));
+    }
+
+    private void setVolumeType(final VolumeType volumeType) {
+        getView().getHdfsUriContainer().setVisible(VolumeType.HDFS.equals(volumeType));
+        getView().getRunAsUserContainer().setVisible(VolumeType.HDFS.equals(volumeType));
+        getView().getNodeContainer().setVisible(VolumeType.PRIVATE.equals(volumeType));
+    }
+
+    private void read() {
+        clientDispatchAsync.exec(new EntityServiceFindAction<FindNodeCriteria, Node>(new FindNodeCriteria())).onSuccess(result -> {
+            getView().getNode().addItems(result.getValues());
+            getView().getNode().setSelectedItem(volume.getNode());
+        });
+
+        getView().getVolumeType().addItems(Arrays.stream(VolumeType.values()).sorted(Comparator.comparing(VolumeType::getDisplayValue)).collect(Collectors.toList()));
+        getView().getVolumeType().setSelectedItem(volume.getVolumeType());
+        setVolumeType(volume.getVolumeType());
+        getView().getHdfsUri().setText(volume.getHdfsUri());
+        getView().getRunAsUser().setText(volume.getRunAs());
+        getView().getPath().setText(volume.getPath());
+        getView().getStreamStatus().addItems(VolumeUseStatus.values());
+        getView().getStreamStatus().setSelectedItem(volume.getStreamStatus());
+        getView().getIndexStatus().addItems(VolumeUseStatus.values());
+        getView().getIndexStatus().setSelectedItem(volume.getIndexStatus());
+
+        if (volume.getBytesLimit() != null) {
+            getView().getBytesLimit().setText(ModelStringUtil.formatIECByteSizeString(volume.getBytesLimit()));
+        } else {
+            getView().getBytesLimit().setText("");
+        }
+    }
+
+    private void write() {
+        try {
+            volume.setVolumeType(getView().getVolumeType().getSelectedItem());
+            volume.setHdfsUri(getView().getHdfsUri().getText());
+            volume.setRunAs(getView().getRunAsUser().getText());
+            volume.setPath(getView().getPath().getText());
+            volume.setNode(getView().getNode().getSelectedItem());
+            volume.setStreamStatus(getView().getStreamStatus().getSelectedItem());
+            volume.setIndexStatus(getView().getIndexStatus().getSelectedItem());
+
+            Long bytesLimit = null;
+            final String limit = getView().getBytesLimit().getText().trim();
+            if (limit.length() > 0) {
+                bytesLimit = ModelStringUtil.parseIECByteSizeString(limit);
+            }
+            volume.setBytesLimit(bytesLimit);
+
+            clientDispatchAsync.exec(new EntityServiceSaveAction<>(volume)).onSuccess(result -> {
+                volume = result;
+                HidePopupEvent.fire(VolumeEditPresenter.this, VolumeEditPresenter.this, false, true);
+                // Only fire this event here as the parent only
+                // needs to
+                // refresh if there has been a change.
+                CloseEvent.fire(VolumeEditPresenter.this);
+            });
+
+        } catch (final Exception e) {
+            AlertEvent.fireError(this, e.getMessage(), null);
+        }
+    }
 
     public interface VolumeEditView extends View {
-        ItemListBox<Node> getNode();
+        ItemListBox<VolumeType> getVolumeType();
+
+        HasText getHdfsUri();
+
+        HasText getRunAsUser();
 
         HasText getPath();
 
-        ItemListBox<VolumeType> getVolumeType();
+        ItemListBox<Node> getNode();
 
         ItemListBox<VolumeUseStatus> getStreamStatus();
 
         ItemListBox<VolumeUseStatus> getIndexStatus();
 
         HasText getBytesLimit();
+
+        Grid getVolumeTypeContainer();
+
+        Grid getHdfsUriContainer();
+
+        Grid getRunAsUserContainer();
+
+        Grid getPathContainer();
+
+        Grid getNodeContainer();
+
+        Grid getStreamStatusContainer();
+
+        Grid getIndexStatusContainer();
+
+        Grid getBytesLimitContainer();
     }
 
     private class DelegatePopupUiHandlers extends DefaultPopupUiHandlers {
@@ -82,81 +203,6 @@ public class VolumeEditPresenter extends MyPresenterWidget<VolumeEditPresenter.V
             if (popupUiHandlers != null) {
                 popupUiHandlers.onHide(autoClose, ok);
             }
-        }
-    }
-
-    private final ClientDispatchAsync clientDispatchAsync;
-    private Volume volume;
-
-    @Inject
-    public VolumeEditPresenter(final EventBus eventBus, final VolumeEditView view,
-                               final ClientDispatchAsync clientDispatchAsync) {
-        super(eventBus, view);
-        this.clientDispatchAsync = clientDispatchAsync;
-    }
-
-    public void addVolume(final Volume volume, final PopupUiHandlers popupUiHandlers) {
-        this.volume = volume;
-        read();
-
-        ShowPopupEvent.fire(this, this, PopupType.OK_CANCEL_DIALOG, popupSize, "Add Volume",
-                new DelegatePopupUiHandlers(popupUiHandlers));
-    }
-
-    public void editVolume(final Volume volume, final PopupUiHandlers popupUiHandlers) {
-        this.volume = volume;
-        read();
-
-        ShowPopupEvent.fire(this, this, PopupType.OK_CANCEL_DIALOG, popupSize, "Edit Volume",
-                new DelegatePopupUiHandlers(popupUiHandlers));
-    }
-
-    private void read() {
-        clientDispatchAsync.exec(new EntityServiceFindAction<FindNodeCriteria, Node>(new FindNodeCriteria())).onSuccess(result -> {
-            getView().getNode().addItems(result.getValues());
-            getView().getNode().setSelectedItem(volume.getNode());
-        });
-        getView().getPath().setText(volume.getPath());
-        getView().getVolumeType().addItems(VolumeType.values());
-        getView().getVolumeType().setSelectedItem(volume.getVolumeType());
-        getView().getStreamStatus().addItems(VolumeUseStatus.values());
-        getView().getStreamStatus().setSelectedItem(volume.getStreamStatus());
-        getView().getIndexStatus().addItems(VolumeUseStatus.values());
-        getView().getIndexStatus().setSelectedItem(volume.getIndexStatus());
-
-        if (volume.getBytesLimit() != null) {
-            getView().getBytesLimit().setText(ModelStringUtil.formatIECByteSizeString(volume.getBytesLimit()));
-        } else {
-            getView().getBytesLimit().setText("");
-        }
-    }
-
-    private void write() {
-        try {
-            volume.setNode(getView().getNode().getSelectedItem());
-            volume.setPath(getView().getPath().getText());
-            volume.setVolumeType(getView().getVolumeType().getSelectedItem());
-            volume.setStreamStatus(getView().getStreamStatus().getSelectedItem());
-            volume.setIndexStatus(getView().getIndexStatus().getSelectedItem());
-
-            Long bytesLimit = null;
-            final String limit = getView().getBytesLimit().getText().trim();
-            if (limit.length() > 0) {
-                bytesLimit = ModelStringUtil.parseIECByteSizeString(limit);
-            }
-            volume.setBytesLimit(bytesLimit);
-
-            clientDispatchAsync.exec(new EntityServiceSaveAction<>(volume)).onSuccess(result -> {
-                volume = result;
-                HidePopupEvent.fire(VolumeEditPresenter.this, VolumeEditPresenter.this, false, true);
-                // Only fire this event here as the parent only
-                // needs to
-                // refresh if there has been a change.
-                CloseEvent.fire(VolumeEditPresenter.this);
-            });
-
-        } catch (final Exception e) {
-            AlertEvent.fireError(this, e.getMessage(), null);
         }
     }
 }

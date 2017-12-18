@@ -25,7 +25,7 @@ import stroom.streamstore.server.fs.FileSystemUtil;
  * Not very OO but added here for GWT reasons.
  */
 public class IndexShardUtil {
-    public static File getIndexDir(IndexShard indexShard) {
+    public static String getIndexPath(IndexShard indexShard) {
         StringBuilder builder = new StringBuilder();
         builder.append(indexShard.getVolume().getPath());
         builder.append(FileSystemUtil.SEPERATOR_CHAR);
@@ -36,6 +36,6 @@ public class IndexShardUtil {
         builder.append(indexShard.getPartition());
         builder.append(FileSystemUtil.SEPERATOR_CHAR);
         builder.append(indexShard.getId());
-        return new File(builder.toString());
+        return builder.toString();
     }
 }
