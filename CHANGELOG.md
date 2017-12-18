@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+* Add experimental supprt for index shards hosted on HDFS.
+
 ## [v5.0-beta.70] - 2017-12-15
 
 * Issue **#501** : Improve the database teardown process in integration tests to speed up builds.
